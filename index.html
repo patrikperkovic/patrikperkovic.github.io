@@ -3,120 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="Shortcut Icon" type="image/x-icon" href="icon.png" />
     <title>Patrik Perkovic</title>
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
     <style>
         body {
-            background-color: #000000;
-            color: #ffffff;
-            font-family: Courier New, monospace;
-            font-size: small;
-            margin: 0; /* Remove default body margin */
-            padding: 0; /* Remove default body padding */
+            background: url('azul.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'MS Sans Serif', sans-serif;
+            overflow: hidden;
         }
-
-        .container {
-            width: 600px;
-            margin: 0 auto; /* Center the container horizontally */
-            text-align: center; /* Center align content inside container */
+        
+        .desktop {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 580px));
+            grid-template-rows: repeat(auto-fit, minmax(200px, auto));
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
         }
-
-        a {
-            color: #00ffff;
+        
+        .window {
+            cursor: move; 
+            position: relative; 
+            max-width: 580px;
+            margin: 0; 
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3); 
+            z-index: 1; 
         }
-
-        a:active {
-            color: #ffff00;
+        
+        .window.active {
+            z-index: 10; 
         }
-
-        a:visited {
-            color: #ff00ff;
+        
+        .window.hidden {
+            display: none; 
         }
-
-        a:active {
-            color: #ffff00;
+        
+        .window-body {
+            padding: 0px;
         }
-
-        a:hover {
-            color: white;
+        
+        .skills-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
         }
-
-        .noline a {
-            text-decoration: none;
+        
+        .skills-column {
+            width: 48%;
         }
-
-        img.noborder {
-            border: 0;
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .section-heading {
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        .info {
+        
+        .field-row {
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
+            justify-content: space-between;
+        }
+        
+        .button a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        pre {
+            margin: 0;
+            color: #FFFFFF;
+            background-color: #000000;
+            font-family: 'Lucida Console', monospace;
+            padding: 10px;
+            border: 1px solid #808080;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            width: 560px;
+        }
+        
+        /* Fix for window height */
+        #skillsCertsWindow {
+            max-height: 400px; 
+        }
+        #skillsCertsWindow .window-body {
+            max-height: 340px; /* Leave room for title bar and status bar */
+            overflow-y: auto; 
+        }
+        
+       
+        @media (max-width: 1200px) {
+            .desktop {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            pre {
+                width: 100%;
+                max-width: 560px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .skills-container {
+                flex-direction: column;
+            }
+            
+            .skills-column {
+                width: 100%;
+            }
         }
 
-        .info p {
-            margin: 5px 0;
+        /* Windows taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #1C57E6 0%, #113ACB 9%, #0F36BC 24%, #3468F2 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 1000;
+        }
+        
+        .start-button {
+            background: linear-gradient(to bottom, #35AE1A 0%, #26951E 100%);
+            color: white;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 3px;
+            margin-right: 10px;
+            cursor: pointer;
         }
 
-        .skills, .certifications {
-            margin-top: 10px;
-        }
+        .cursor {
+    animation: blink 1s step-end infinite; /* 1-second blink cycle, step-end for instant off/on */
+    color: #00FF00; /* Matches your command prompt text color */
+    display: inline-block; /* Ensures it behaves as part of the text flow */
+}
 
-        .skills ul, .certifications ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .skills li, .certifications li {
-            margin-bottom: 5px;
-        }
+@keyframes blink {
+    0%, 50% {
+        opacity: 1; /* Visible */
+    }
+    50.1%, 100% {
+        opacity: 0; /* Invisible */
+    }
+}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="section">
-            <h1>Patrik Perkovic</h1>
-            <img src="me.jpg" alt="Patrik Perkovic" width="150" height="150">
-            <h5></h5>
-        </div>
-        <div class="section">
-            <div class="section-heading">About Me</div>
-            <div class="info">
-                <p>Name: <b>Patrik Perkovic</b></p>
-                <p>Location: <b>South Coast, NSW Australia</b></p>
-                <p>Current role: <b>Infrastructure Technician</b></p>
+    <div class="desktop">
+        <div class="window" id="aboutWindow">
+            <div class="title-bar">
+                <div class="title-bar-text">Command Prompt</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <pre>
+<span>Microsoft(R) Windows DOS</span>
+<span>(C) Copyright Microsoft Corp 1990-2001.</span>
+
+<span>X:\projects\website></span><span style="color: #00FF00">about_me.exe</span>
+
+<span style="color: #00FFFF">Name:</span> <span>Patrik Perkovic</span>
+<span style="color: #00FFFF">Location:</span> <span>Sydney, Australia</span>
+<span style="color: #00FFFF">Current role:</span> <span>Infrastructure Technician @ an MSP</span>
+
+<span>I’m </span><span style="color: #00FFFF">Patrik</span><span>, an IT professional passionate about </span><span style="color: #00FFFF">networking</span><span>, </span><span style="color: #00FFFF"> my "homelab"</span><span>, and </span><span style="color: #00FFFF">retro tech</span><span>. I can handle your IT infrastructure, in the cloud or on premises. Off-duty, I run LAN parties and mess with vintage computers and cameras.</span>
+
+
+<span>X:\projects\website><span class="cursor">_</span></span>
+                </pre>
             </div>
         </div>
-        <div class="section skills">
-            <div class="section-heading">Some Skills</div>
-            <ul>
-                <li><a href="https://www.microsoft.com/en-au/windows">Microsoft Windows / Server</a></li>
-                <li><a href="https://azure.microsoft.com">Microsoft Azure</a></li>
-                <li><a href="https://www.microsoft.com/en-au/microsoft-365/microsoft-365-business">Microsoft 365</a></li>
-                <li><a href="https://www.vmware.com/au/products/esxi-and-esx.html">VMWare ESXi</a></li>
-                <li><a href="https://en.wikipedia.org/wiki/Computer_network">Computer Networking</a></li>
-                <li><a href="https://www.fortinet.com/products/next-generation-firewall">Fortigate NGFW</a></li>
-                <li><a href="https://www.pfsense.org/">pfSense Firewalls</a></li>
-                <li><a href="https://www.microsoft.com/en-au/security/business/microsoft-intune">MS Endpoint / Intune / SCCM</a></li>
-            </ul>
-        </div>
-        <div class="section certifications">
-            <div class="section-heading">Recent Certs</div>
-            <ul>
-                <li><a href="https://learn.microsoft.com/api/credentials/share/en-au/PatrikPerkovic-2326/2F0EF19A903B7C46?sharingId=31ACE7B2C47D9475">Microsoft Certified: Azure Administrator Associate <i>(Completed Dec '23)</i></a></li>
-                <li><a href="https://training.fortinet.com/local/staticpage/view.php?page=library_fortigate-administrator">Fortinet NSE4 <i>(Completed Apr '24)</i></a></li>
-                <li></li>
-            </ul>
-        </div>
 
-        <p>(c) 2024 Patrik Perkovic --- My email is my <b>first name @ this website's domain.</b></p>
+        <div class="window" id="skillsCertsWindow">
+            <div class="title-bar">
+                <div class="title-bar-text">Some Skills & Certifications</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <div class="skills-container">
+                    <div class="skills-column">
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill1">
+                                <label for="skill1">Microsoft Windows / Server</label>
+                            </div>
+                            <button class="button"><a href="https://www.microsoft.com/en-au/windows">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill2">
+                                <label for="skill2">Microsoft Azure</label>
+                            </div>
+                            <button class="button"><a href="https://azure.microsoft.com">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill3">
+                                <label for="skill3">Microsoft 365</label>
+                            </div>
+                            <button class="button"><a href="https://www.microsoft.com/en-au/microsoft-365/microsoft-365-business">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill4">
+                                <label for="skill4">VMWare ESXi</label>
+                            </div>
+                            <button class="button"><a href="https://www.vmware.com/au/products/esxi-and-esx.html">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill9">
+                                <label for="skill9">Citrix DaaS</label>
+                            </div>
+                            <button class="button"><a href="https://docs.citrix.com/en-us/citrix-daas/overview.html">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill11">
+                                <label for="skill11">Cisco IOS</label>
+                            </div>
+                            <button class="button"><a href="https://www.cisco.com/c/en_au/products/ios-nx-os-software/index.html">Learn More</a></button>
+                        </div>
+                    </div>
+                    <div class="skills-column">
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill5">
+                                <label for="skill5">Unifi</label>
+                            </div>
+                            <button class="button"><a href="https://www.ui.com/">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill6">
+                                <label for="skill6">Fortigate NGFW</label>
+                            </div>
+                            <button class="button"><a href="https://www.fortinet.com/products/next-generation-firewall">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill7">
+                                <label for="skill7">pfSense</label>
+                            </div>
+                            <button class="button"><a href="https://www.pfsense.org/">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill8">
+                                <label for="skill8">MS Endpoint / Intune / SCCM</label>
+                            </div>
+                            <button class="button"><a href="https://www.microsoft.com/en-au/security/business/microsoft-intune">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill11">
+                                <label for="skill11">PowerShell</label>
+                            </div>
+                            <button class="button"><a href="https://learn.microsoft.com/en-us/powershell/">Learn More</a></button>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="skill11">
+                                <label for="skill11">Aruba</label>
+                            </div>
+                            <button class="button"><a href="https://www.hpe.com/au/en/aruba-cx-switches.html">Learn More</a></button>
+                        </div>
+                    
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="skills-container">
+                    <div class="skills-column">
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="cert1">
+                                <label for="cert1">AZ-104 Azure Administrator Associate</label>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input checked type="checkbox" id="cert2">
+                                <label for="cert2">Fortinet FortiOS 7.4 (NSE4)</label>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input disabled type="checkbox" id="cert3">
+                                <label for="cert3">CompTIA Network+</label>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input disabled type="checkbox" id="cert4">
+                                <label for="cert4">Cisco CCNA</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skills-column">
+                        <div class="field-row">
+                            <div>
+                                <input disabled type="checkbox" id="cert5">
+                                <label for="cert5">Another cert...</label>
+                            </div>
+                        </div>
+                        <div class="field-row">
+                            <div>
+                                <input disabled type="checkbox" id="cert6">
+                                <label for="cert6">Another cert..</label>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <label>More certs loading...</label>
+                            <progress style="width: 100%;"></progress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-bar">
+                <p class="status-bar-field">Alt+F4 for a surprise</p>
+                <p class="status-bar-field">   </p>
+                <p class="status-bar-field">HDD Free: 3.89Gb</p>
+            </div>
+        </div>
+        <div class="window" style="width: 165px; height: 195px">
+            <div class="title-bar">
+              <div class="title-bar-text">me.jpg</div>
+              <div class="title-bar-controls">
+                <button aria-label="Close"></button>
+              </div>
+            </div>
+            <div class="window-body">
+                <img src="me.jpg" width="150" height="150">
+            </div>
+          </div>
+        
+        <div class="window" id="contactWindow">
+            <div class="title-bar">
+                <div class="title-bar-text">Contact</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="window-body" style="padding: 10px;">
+                <section class="tabs" style="max-width: 500px">
+                    <menu role="tablist" aria-label="Sample Tabs">
+                      <button role="tab" aria-selected="true" aria-controls="tab-A">Contact Me</button>
+                      <button role="tab" aria-controls="tab-B">Attribution</button>
+                    </menu>
+                    <!-- the tab content -->
+                    <article role="tabpanel" id="tab-A">
+                        <p>Want to work with me, or just talk shop? Reach out below!</p>
+
+                        <ul class="tree-view">
+                            <li>Thanks to the endless bots out there, my email is:</li>
+                            <li>My <strong style="color: purple">first name</strong> at patrikperkovic dot com</li>
+                            <li>Alternatively, connect with me on <strong style="color: rgb(21, 0, 158)">LinkedIn</strong> <a style="color: rgb(21, 0, 158)" href="https://www.linkedin.com/in/patrikperkovic/">here</a></li>
+                          </ul>
+                    </article>
+                    <article role="tabpanel" hidden id="tab-B">
+                       <p>© 2025 This website made by me using HTML, CS and JS skills I haven't touched since high school. </p>
+                        <p>This awesome Windows XP styling thanks to botoxparty's <a href="https://botoxparty.github.io/XP.css">XP.css</a></p>
+                    </article>
+                  </section>
+            </div>
+            <div class="status-bar">
+                <p class="status-bar-field">Press F1 for help</p>
+                <p class="status-bar-field">No Spam Please</p>
+                <p class="status-bar-field">CPU Usage: 99%</p>
+            </div>
+        </div>
     </div>
+
+    <div class="taskbar">
+        <button class="start-button" onclick="location.reload();">start</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make windows draggable
+            const windows = document.querySelectorAll('.window');
+            
+            windows.forEach(function(window) {
+                const titleBar = window.querySelector('.title-bar');
+                let isDragging = false;
+                let offsetX, offsetY;
+                
+                const randomX = Math.floor(Math.random() * 50);
+                const randomY = Math.floor(Math.random() * 50);
+                window.style.transform = `translate(${randomX}px, ${randomY}px)`;
+                
+                window.addEventListener('mousedown', function() {
+                    windows.forEach(w => w.classList.remove('active'));
+                    window.classList.add('active');
+                });
+                
+                const closeButton = window.querySelector('button[aria-label="Close"]');
+                closeButton.addEventListener('click', function() {
+                    window.classList.add('hidden');
+                });
+                
+                titleBar.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    
+                    const transform = window.style.transform;
+                    const currentTranslate = transform.match(/translate\((.+)px, (.+)px\)/);
+                    
+                    let currentX = 0;
+                    let currentY = 0;
+                    
+                    if (currentTranslate && currentTranslate.length === 3) {
+                        currentX = parseFloat(currentTranslate[1]);
+                        currentY = parseFloat(currentTranslate[2]);
+                    }
+                    
+                    offsetX = e.clientX - currentX;
+                    offsetY = e.clientY - currentY;
+                    
+                    windows.forEach(w => w.classList.remove('active'));
+                    window.classList.add('active');
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const x = e.clientX - offsetX;
+                    const y = e.clientY - offsetY;
+                    
+                    window.style.transform = `translate(${x}px, ${y}px)`;
+                });
+            });
+            
+            document.querySelector('.desktop').addEventListener('dblclick', function(e) {
+                if (e.target === this) {
+                    windows.forEach(window => {
+                        window.classList.remove('hidden');
+                    });
+                }
+            });
+
+            const tabButtons = document.querySelectorAll('menu[role="tablist"] button[role="tab"]');
+            const tabPanels = document.querySelectorAll('article[role="tabpanel"]');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => {
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    tabPanels.forEach(panel => {
+                        panel.setAttribute('hidden', '');
+                    });
+
+                    button.setAttribute('aria-selected', 'true');
+                    const panelId = button.getAttribute('aria-controls');
+                    const activePanel = document.getElementById(panelId);
+                    activePanel.removeAttribute('hidden');
+                });
+            });
+        });
+    </script>
+
+   
 </body>
 </html>
